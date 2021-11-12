@@ -32,6 +32,9 @@ type CobraPrompt struct {
 	// PersistFlagValues will persist flags. For example have verbose turned on every command.
 	PersistFlagValues bool
 
+	// FlagsToExclude is a list of flag names to specify flags to exclude from suggestions
+	FlagsToExclude []string
+
 	// Suggests flags without user type "-"
 	SuggestFlagsWithoutDash bool
 
@@ -128,6 +131,9 @@ func findSuggestions(co *CobraPrompt, d *prompt.Document) []prompt.Suggest {
 		if flag.Hidden && !co.ShowHiddenFlags {
 			return
 		}
+		if !stringInSlice(co.FlagsToExclude, flag.Name) {
+			return
+		}
 		if strings.HasPrefix(d.GetWordBeforeCursor(), "--") {
 			suggestions = append(suggestions, prompt.Suggest{Text: "--" + flag.Name, Description: flag.Usage})
 		} else if co.SuggestFlagsWithoutDash && d.GetWordBeforeCursor() == "" && flag.Shorthand != "" {
@@ -156,4 +162,13 @@ func findSuggestions(co *CobraPrompt, d *prompt.Document) []prompt.Suggest {
 		suggestions = append(suggestions, co.DynamicSuggestionsFunc(annotation, d)...)
 	}
 	return prompt.FilterHasPrefix(suggestions, d.GetWordBeforeCursor(), true)
+}
+
+func stringInSlice(slice []string, str string) bool {
+	for _, s := range slice {
+		if str == s {
+			return true
+		}
+	}
+	return false
 }
