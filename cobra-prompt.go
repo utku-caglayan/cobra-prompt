@@ -131,7 +131,7 @@ func findSuggestions(co *CobraPrompt, d *prompt.Document) []prompt.Suggest {
 		if flag.Hidden && !co.ShowHiddenFlags {
 			return
 		}
-		if !stringInSlice(co.FlagsToExclude, flag.Name) {
+		if stringInSlice(co.FlagsToExclude, flag.Name) {
 			return
 		}
 		if strings.HasPrefix(d.GetWordBeforeCursor(), "--") {
