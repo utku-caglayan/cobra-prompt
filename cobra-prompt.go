@@ -12,7 +12,7 @@ import (
 // DynamicSuggestionsAnnotation for dynamic suggestions.
 const DynamicSuggestionsAnnotation = "cobra-prompt-dynamic-suggestions"
 
-// PersistFlagValuesFlag the flag that will be avaiailable when PersistFlagValues is true
+// PersistFlagValuesFlag the flag that will be available when PersistFlagValues is true
 const PersistFlagValuesFlag = "persist-flag-values"
 
 // CobraPrompt given a Cobra command it will make every flag and sub commands available as suggestions.
@@ -25,12 +25,15 @@ type CobraPrompt struct {
 	// see https://github.com/c-bata/go-prompt/blob/master/option.go
 	GoPromptOptions []prompt.Option
 
-	// DynamicSuggestionsFunc will be executed if an command has CallbackAnnotation as an annotation. If it's included
+	// DynamicSuggestionsFunc will be executed if a command has CallbackAnnotation as an annotation. If it's included
 	// the value will be provided to the DynamicSuggestionsFunc function.
 	DynamicSuggestionsFunc func(annotationValue string, document *prompt.Document) []prompt.Suggest
 
 	// PersistFlagValues will persist flags. For example have verbose turned on every command.
 	PersistFlagValues bool
+
+	// Suggests flags without user type "-"
+	SuggestFlagsWithoutDash bool
 
 	// ShowHelpCommandAndFlags will make help command and flag for every command available.
 	ShowHelpCommandAndFlags bool
@@ -127,6 +130,8 @@ func findSuggestions(co *CobraPrompt, d *prompt.Document) []prompt.Suggest {
 		}
 		if strings.HasPrefix(d.GetWordBeforeCursor(), "--") {
 			suggestions = append(suggestions, prompt.Suggest{Text: "--" + flag.Name, Description: flag.Usage})
+		} else if co.SuggestFlagsWithoutDash && d.GetWordBeforeCursor() == "" && flag.Shorthand != "" {
+			suggestions = append(suggestions, prompt.Suggest{Text: "-" + flag.Shorthand, Description: flag.Usage})
 		} else if strings.HasPrefix(d.GetWordBeforeCursor(), "-") && flag.Shorthand != "" {
 			suggestions = append(suggestions, prompt.Suggest{Text: "-" + flag.Shorthand, Description: flag.Usage})
 		}
